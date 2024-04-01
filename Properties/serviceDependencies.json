@@ -3,6 +3,9 @@
     "identityapp1": {
       "type": "identityapp",
       "dynamicId": null
+    },
+    "apis1": {
+      "type": "apis"
     }
   }
 }
