@@ -21,6 +21,11 @@ var app = builder.Build();
     app.UseSwagger();
     app.UseSwaggerUI();
 }*/
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("v1/swagger.json", "Strive API");
+});
 
 app.UseHttpsRedirection();
 
