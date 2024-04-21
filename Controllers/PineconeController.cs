@@ -11,7 +11,7 @@ using System.Web;
 namespace strive_api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class PineconeController : ControllerBase
     {
@@ -33,7 +33,6 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("indexDetails")]
-        [EnableCors("AllowAll")]
         public async Task<ActionResult> IndexDetails()
         {
             using (var httpClient = new HttpClient())
@@ -75,7 +74,6 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("purgePinecone")]
-        [EnableCors("AllowAll")]
         public async Task<ActionResult> PurgeNamespace([FromBody] Pinecone_PurgeNamespace_Request requestBody)
         {
             APIWrapper responseModel = new();
@@ -140,7 +138,6 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("getRecord")]
-        [EnableCors("AllowAll")]
         public async Task<ActionResult> GetRecord([FromBody] Pinecone_GetRecord_Request requestBody)
         {
             APIWrapper responseModel = new();
