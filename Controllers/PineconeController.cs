@@ -33,7 +33,6 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("indexDetails")]
-        [EnableCors("AllowAll")]
         public async Task<ActionResult> IndexDetails()
         {
             using (var httpClient = new HttpClient())
