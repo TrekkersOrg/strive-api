@@ -1,12 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
 using MongoDB.Driver;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
 using MongoDB.Bson;
+using strive_api.Models;
 
 namespace strive_api.Controllers
 {
@@ -115,17 +114,14 @@ namespace strive_api.Controllers
             responseModel.StatusMessage = statusMessage;
             responseModel.StatusMessageText = statusMessageText;
             responseModel.Timestamp = timestamp;
-            if (data is MongoDB_PostCollection_Response)
+            Type[] validResponseTypes =
+            {
+                typeof(MongoDB_PostCollection_Response),
+                typeof(MongoDB_UploadDocument_Response)
+            };
+            if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
                 responseModel.Data = data;
-            }
-            else if (data is MongoDB_UploadDocument_Response)
-            {
-                responseModel.Data = data;
-            }
-            else
-            {
-                responseModel.Data = "";
             }
             return responseModel;
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using strive_api.Models;
 using System.Data;
 
 namespace strive_api.Controllers

@@ -1,4 +1,4 @@
-﻿namespace strive_api
+﻿namespace strive_api.Models
 {
     public class APIWrapper
     {
@@ -6,6 +6,6 @@
         public string? StatusMessage { get; set; }
         public string? StatusMessageText { get; set; }
         public DateTime Timestamp { get; set; }
-        public Object? Data { get; set; }
+        public object? Data { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace strive_api
+﻿namespace strive_api.Models
 {
     public class MongoDB_PostCollection_Response
     {
