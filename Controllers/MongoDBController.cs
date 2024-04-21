@@ -10,7 +10,7 @@ using strive_api.Models;
 namespace strive_api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class MongoDBController : ControllerBase
     {

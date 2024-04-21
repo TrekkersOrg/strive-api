@@ -8,7 +8,7 @@ using SendGrid.Helpers.Mail;
 namespace strive_api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class EmailController : ControllerBase
     {
@@ -28,7 +28,6 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("sendEmail")]
-        [EnableCors("AllowAll")]
         public async Task<ActionResult> SendEmail(Email_SendEmail_Request requestBody)
         {
             APIWrapper responseModel = new();
