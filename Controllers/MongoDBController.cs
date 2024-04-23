@@ -33,7 +33,7 @@ namespace strive_api.Controllers
         public IActionResult PostCollection([FromQuery] string collectionName)
         {
             MongoClient client = new MongoClient(_dbConnectionString);
-            IMongoDatabase database = client.GetDatabase("Test");
+            IMongoDatabase database = client.GetDatabase("Production");
             database.CreateCollection(collectionName);
             MongoDB_PostCollection_Response responseData = new MongoDB_PostCollection_Response
             {
@@ -47,7 +47,7 @@ namespace strive_api.Controllers
         public IActionResult DeleteCollection([FromQuery] string collectionName)
         {
             MongoClient client = new MongoClient(_dbConnectionString);
-            IMongoDatabase database = client.GetDatabase("Test");
+            IMongoDatabase database = client.GetDatabase("Production");
             database.DropCollection(collectionName);
             APIWrapper response = createResponseModel(200, "Success", "Collection deleted successfully.", DateTime.Now, null);
             return Ok(response);
@@ -64,7 +64,7 @@ namespace strive_api.Controllers
             string extractedText = ExtractTextFromPdf(filePath);
             System.IO.File.Delete(filePath);
             MongoClient client = new MongoClient(_dbConnectionString);
-            IMongoDatabase database = client.GetDatabase("Test");
+            IMongoDatabase database = client.GetDatabase("Production");
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
             var document = new BsonDocument
             {
