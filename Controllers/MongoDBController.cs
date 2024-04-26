@@ -6,6 +6,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using System.Text;
 using MongoDB.Bson;
 using strive_api.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace strive_api.Controllers
 {
@@ -54,6 +55,7 @@ namespace strive_api.Controllers
         }
 
         [HttpPost("UploadDocument")]
+        [EnableCors("AllowAll")]
         public IActionResult UploadDocument(IFormFile targetFile, string collectionName)
         {
             var filePath = Path.Combine(_webHostEnvironment.ContentRootPath, Path.GetRandomFileName());
