@@ -66,7 +66,7 @@ namespace strive_api.Controllers
             string extractedText = ExtractTextFromPdf(filePath);
             System.IO.File.Delete(filePath);
             MongoClient client = new MongoClient(_dbConnectionString);
-            IMongoDatabase database = client.GetDatabase("Test");
+            IMongoDatabase database = client.GetDatabase("Production");
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
             var document = new BsonDocument
             {
@@ -81,6 +81,43 @@ namespace strive_api.Controllers
             };
             APIWrapper response = createResponseModel(200, "Success", "Document uploaded successfully.", DateTime.Now, responseData);
             return Ok(response);
+        }
+
+        [HttpGet("GetDocument")]
+        [EnableCors("AllowAll")]
+        public IActionResult GetDocument([FromQuery] string fileName, string collectionName)
+        {
+            APIWrapper response = new();
+            MongoDB_GetDocument_Response responseData = new();
+            try
+            {
+                MongoClient client = new MongoClient(_dbConnectionString);
+                IMongoDatabase database = client.GetDatabase("Production");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
+                var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+                var document = collection.Find(filter).FirstOrDefault();
+                if (document != null)
+                {
+                    responseData.FileExists = true;
+                    responseData.FileName = fileName;
+                    responseData.CollectionName = collectionName;
+                    response = createResponseModel(200, "Success", $"{fileName} exists in {collectionName} collection.", DateTime.Now, responseData);
+                    return Ok(response);
+                }
+                else
+                {
+                    responseData.FileExists = false;
+                    responseData.FileName = fileName;
+                    responseData.CollectionName = collectionName;
+                    response = createResponseModel(200, "Success", $"{fileName} exists in {collectionName} collection.", DateTime.Now, responseData);
+                    return Ok(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                response = createResponseModel((int)response.StatusCode, "Unexpected Error", ex.Message, DateTime.Now);
+                return StatusCode((int)response.StatusCode, response);
+            }
         }
 
         private string ExtractTextFromPdf(string filePath)
@@ -119,7 +156,8 @@ namespace strive_api.Controllers
             Type[] validResponseTypes =
             {
                 typeof(MongoDB_PostCollection_Response),
-                typeof(MongoDB_UploadDocument_Response)
+                typeof(MongoDB_UploadDocument_Response),
+                typeof (MongoDB_GetDocument_Response),
             };
             if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
