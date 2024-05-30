@@ -34,6 +34,8 @@ namespace strive_api.Controllers
                     {
                         Id = reader.GetString("Id"),
                         Username = reader.GetString("UserName"),
+                        FirstName = reader.GetString("FirstName"),
+                        LastName = reader.GetString("LastName"),
                         Email = reader.GetString("Email"),
                         EmailConfirmed = reader.GetBoolean("EmailConfirmed")
                     };
