@@ -1,4 +1,7 @@
-﻿namespace strive_api.Models
+﻿/// <summary>
+/// Represents the metadata of all API responses.
+/// </summary>
+namespace strive_api.Models
 {
     public class APIWrapper
     {

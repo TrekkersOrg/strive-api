@@ -1,4 +1,7 @@
-﻿namespace strive_api.Models
+﻿/// <summary>
+/// Represents the response body of the /email/sendEmail endpoint.
+/// </summary>
+namespace strive_api.Models
 {
     public class Email_SendEmail_Response
     {
