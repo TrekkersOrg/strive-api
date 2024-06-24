@@ -1,8 +1,11 @@
 ﻿using System.Text.Json;
 
+/// <summary>
+/// Represents the request body of the /pinecone/purgePinecone endpoint.
+/// </summary>
 namespace strive_api.Models
 {
-    public class Pinecone_PurgeNamespace_Request
+    public class Pinecone_PurgePinecone_Request
     {
         public string? Namespace { get; set; }
 

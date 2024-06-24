@@ -1,5 +1,8 @@
 ﻿using System.Text.Json;
 
+/// <summary>
+/// Represents the request body of the /pinecone/getRecord endpoint.
+/// </summary>
 namespace strive_api.Models
 {
     public class Pinecone_GetRecord_Request

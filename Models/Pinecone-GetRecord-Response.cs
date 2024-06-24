@@ -1,4 +1,7 @@
-﻿namespace strive_api.Models
+﻿/// <summary>
+/// Represents the response body of the /pinecone/getRecord endpoint.
+/// </summary>
+namespace strive_api.Models
 {
     public class Pinecone_GetRecord_Response
     {
