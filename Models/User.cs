@@ -1,4 +1,7 @@
-﻿namespace strive_api.Models
+﻿/// <summary>
+/// Represents an authenticated Strive user.
+/// </summary>
+namespace strive_api.Models
 {
     public class User
     {

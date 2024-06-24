@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
 using strive_api.Models;
-using Microsoft.AspNetCore.Cors;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
+/// <summary>
+/// Manages Strive email service.
+/// </summary>
 namespace strive_api.Controllers
 {
     [ApiController]
@@ -12,28 +14,26 @@ namespace strive_api.Controllers
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class EmailController : ControllerBase
     {
-
-        private readonly ILogger<EmailController> _logger;
-        private IConfiguration _configuration;
         private readonly string _sendGridAPIKey;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-
-        public EmailController(ILogger<EmailController> logger, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public EmailController(IConfiguration configuration)
         {
-            _logger = logger;
-            _configuration = configuration;
             _sendGridAPIKey = configuration["SendGrid:Key"];
-            _webHostEnvironment = webHostEnvironment;
         }
 
+        /// <summary>
+        /// Sends an email to a user.
+        /// </summary>
+        /// <param name="requestBody">The respective request body.</param>
         [HttpPost("sendEmail")]
         public async Task<ActionResult> SendEmail(Email_SendEmail_Request requestBody)
         {
-            APIWrapper responseModel = new();
+            // Initialize response models.
+            APIWrapper responseModel;
             Email_SendEmail_Response sendEmailResponseModel = new();
             try
             {
+                // Create SendGrid client and construct email.
                 var client = new SendGridClient(_sendGridAPIKey);
                 var emailMessage = new SendGridMessage
                 {
@@ -43,7 +43,11 @@ namespace strive_api.Controllers
                     HtmlContent = requestBody.Body
                 };
                 emailMessage.AddTo(new EmailAddress(requestBody.ToEmail, requestBody.ToName));
+
+                // Send email.
                 var response = await client.SendEmailAsync(emailMessage);
+
+                // Return response depending on success of the API call.
                 if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
                 {
                     sendEmailResponseModel.FromEmail = requestBody.FromEmail;
@@ -52,29 +56,39 @@ namespace strive_api.Controllers
                     sendEmailResponseModel.Body = requestBody.Body;
                     sendEmailResponseModel.ToEmail = requestBody.ToEmail;
                     sendEmailResponseModel.ToName = requestBody.ToName;
-                    responseModel = createResponseModel(200, "Success", "Email sent successfully.", DateTime.Now, sendEmailResponseModel);
+                    responseModel = CreateResponseModel(200, "Success", "Email sent successfully.", DateTime.Now, sendEmailResponseModel);
                     return Ok(responseModel);
                 }
                 else
                 {
-                    responseModel = createResponseModel(200, "Success", "Email failed to send", DateTime.Now, response.ToString());
+                    responseModel = CreateResponseModel(200, "Success", "Email failed to send", DateTime.Now, response.ToString());
                     return Ok(responseModel);
                 }
             }
             catch (Exception ex)
             {
+                // Return status code 500 for any unhandled errors.
                 return StatusCode(500, $"An error occurred while sending the email: {ex.Message}");
             }
         }
 
-
-        private static APIWrapper createResponseModel(int statusCode, string statusMessage, string statusMessageText, DateTime timestamp, object? data = null)
+        /// <summary>
+        /// Creates the API wrapper for the response body.
+        /// </summary>
+        /// <param name="statusCode">The status code of the API response.</param>
+        /// <param name="statusMessage">The status message of the API response.</param>
+        /// <param name="statusMessageText">The more descriptive status message of the API response.</param>
+        /// <param name="timestamp">The timestamp in which the API response was received.</param>
+        /// <param name="data">Any request specific data returned from the API.</param>
+        private static APIWrapper CreateResponseModel(int statusCode, string statusMessage, string statusMessageText, DateTime timestamp, object? data = null)
         {
-            APIWrapper responseModel = new();
-            responseModel.StatusCode = statusCode;
-            responseModel.StatusMessage = statusMessage;
-            responseModel.StatusMessageText = statusMessageText;
-            responseModel.Timestamp = timestamp;
+            APIWrapper responseModel = new()
+            {
+                StatusCode = statusCode,
+                StatusMessage = statusMessage,
+                StatusMessageText = statusMessageText,
+                Timestamp = timestamp
+            };
             Type[] validResponseTypes =
             {
                 typeof(Email_SendEmail_Response)
