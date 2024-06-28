@@ -7,6 +7,8 @@ using System.Text;
 using MongoDB.Bson;
 using strive_api.Models;
 using Microsoft.AspNetCore.Cors;
+using System.Collections;
+using MongoDB.Bson.Serialization;
 
 /// <summary>
 /// Manages Strive MongoDB service.
@@ -48,6 +50,49 @@ namespace strive_api.Controllers
             };
             APIWrapper response = CreateResponseModel(200, "Success", "Collection created successfully.", DateTime.Now, responseData);
             return Ok(response);
+        }
+
+        /// <summary>
+        /// Get User from MongoDB
+        /// </summary>
+        [HttpGet("GetUser")]
+        public IActionResult GetUser([FromQuery] string username)
+        {
+            // Initialize response models.
+            APIWrapper response = new();
+            MongoDB_GetUser_Response responseData = new();
+            try
+            {
+                // Establish MongoDB connection to collection.
+                MongoClient client = new(_dbConnectionString);
+                IMongoDatabase database = client.GetDatabase(_databaseName);
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("Users");
+
+                // Search for the document.
+                var filter = Builders<BsonDocument>.Filter.Eq("username", username);
+                var document = collection.Find(filter).FirstOrDefault();
+
+                // Respective to the file existence, return appropriate response.
+                if (document != null)
+                {
+                    var user = BsonSerializer.Deserialize<MongoDB_GetUser_Response>(document);
+                    responseData.Username = user.Username;
+                    responseData.Password = user.Password;
+                    response = CreateResponseModel(200, "Success", "User found successfully.", DateTime.Now, responseData);
+                    return Ok(response);
+                }
+                else
+                {
+                    response = CreateResponseModel(200, "Success", "User does not exist.", DateTime.Now);
+                    return Ok(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Return status code 500 for any unhandled errors.
+                response = CreateResponseModel((int)response.StatusCode, "Unexpected Error", ex.Message, DateTime.Now);
+                return StatusCode((int)response.StatusCode, response);
+            }
         }
 
         /// <summary>
@@ -196,7 +241,8 @@ namespace strive_api.Controllers
             {
                 typeof(MongoDB_PostCollection_Response),
                 typeof(MongoDB_UploadDocument_Response),
-                typeof (MongoDB_GetDocument_Response),
+                typeof(MongoDB_GetDocument_Response),
+                typeof(MongoDB_GetUser_Response)
             };
             if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
