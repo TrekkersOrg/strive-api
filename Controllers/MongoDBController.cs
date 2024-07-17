@@ -116,12 +116,12 @@ namespace strive_api.Controllers
         /// <param name="collectionName">The name of the collection.</param>
         /// <param name="fileName">The name of the document.</param>
         [HttpPost("DeleteDocument")]
-        public async Task<IActionResult> DeleteDocument([FromQuery] string collectionName, string fileName)
+        public async Task<IActionResult> DeleteDocument([FromQuery] string collectionName, string versionName)
         {
             MongoClient client = new(_dbConnectionString);
             IMongoDatabase database = client.GetDatabase(_databaseName);
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
-            var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+            var filter = Builders<BsonDocument>.Filter.Eq("version_name", versionName);
             await collection.DeleteOneAsync(filter);
             APIWrapper response = CreateResponseModel(200, "Success", "Document deleted successfully.", DateTime.Now, null);
             return Ok(response);
