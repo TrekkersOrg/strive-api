@@ -111,6 +111,23 @@ namespace strive_api.Controllers
         }
 
         /// <summary>
+        /// Deletes a MongoDB document.
+        /// </summary>
+        /// <param name="collectionName">The name of the collection.</param>
+        /// <param name="fileName">The name of the document.</param>
+        [HttpPost("DeleteDocument")]
+        public async Task<IActionResult> DeleteDocument([FromQuery] string collectionName, string fileName)
+        {
+            MongoClient client = new(_dbConnectionString);
+            IMongoDatabase database = client.GetDatabase(_databaseName);
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
+            var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+            await collection.DeleteOneAsync(filter);
+            APIWrapper response = CreateResponseModel(200, "Success", "Document deleted successfully.", DateTime.Now, null);
+            return Ok(response);
+        }
+
+        /// <summary>
         /// Uploads a document to a MongoDB collection.
         /// </summary>
         /// <param name="targetFile">The file.</param>
