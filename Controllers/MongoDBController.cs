@@ -171,6 +171,93 @@ namespace strive_api.Controllers
         }
 
         /// <summary>
+        /// Add a risk assessment to a document.
+        /// </summary>
+        /// <param name="request">The request body.</param>
+        [HttpPost("AddRiskAssessment")]
+        [EnableCors("AllowAll")]
+        public IActionResult AddRiskAssessment(MongoDB_AddRiskAssessment_Request request)
+        {
+            string? requestNamespace = request.Namespace;
+            string? fileName = request.File_Name;
+            string? requestVersionName = request.VersionName;
+            int riskAssessmentScore = request.riskAssessmentScore;
+            int financialScore = request.financialScore;
+            int financialSystemQueryScore = request.financialSystemQueryScore;
+            int financialKeywordsScore = request.financialKeywordsScore;
+            int financialXgbScore = request.financialXgbScore;
+            int reputationalScore = request.reputationalScore;
+            int reputationalSystemQueryScore = request.reputationalSystemQueryScore;
+            int reputationalKeywordsScore = request.reputationalKeywordsScore;
+            int reputationalXgbScore = request.reputationalXgbScore;
+            int regulatoryScore = request.regulatoryScore;
+            int regulatorySystemQueryScore = request.regulatorySystemQueryScore;
+            int regulatoryKeywordsScore = request.regulatoryKeywordsScore;
+            int regulatoryXgbScore = request.regulatoryXgbScore;
+            int operationalScore = request.operationalScore;
+            int operationalSystemQueryScore = request.operationalSystemQueryScore;
+            int operationalKeywordsScore = request.operationalKeywordsScore;
+            int operationalXgbScore = request.operationalXgbScore;
+
+            MongoClient client = new(_dbConnectionString);
+            IMongoDatabase database = client.GetDatabase(_databaseName);
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(requestNamespace);
+
+            BsonDocument riskAssessment = new BsonDocument
+            {
+                { "score", request.riskAssessmentScore },
+                { "financial", new BsonDocument
+                    {
+                        { "score", request.financialScore },
+                        { "system_query", request.financialSystemQueryScore },
+                        { "keywords", request.financialKeywordsScore },
+                        { "xgb", request.financialXgbScore }
+                    }
+                },
+                { "reputational", new BsonDocument
+                    {
+                        { "score", request.reputationalScore },
+                        { "system_query", request.reputationalSystemQueryScore },
+                        { "keywords", request.reputationalKeywordsScore },
+                        { "xgb", request.reputationalXgbScore }
+                    }
+                },
+                { "regulatory", new BsonDocument
+                    {
+                        { "score", request.regulatoryScore },
+                        { "system_query", request.regulatorySystemQueryScore },
+                        { "keywords", request.regulatoryKeywordsScore },
+                        { "xgb", request.regulatoryXgbScore }
+                    }
+                },
+                { "operational", new BsonDocument
+                    {
+                        { "score", request.operationalScore },
+                        { "system_query", request.operationalSystemQueryScore },
+                        { "keywords", request.operationalKeywordsScore },
+                        { "xgb", request.operationalXgbScore }
+                    }
+                }
+            };
+
+            var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+
+            var update = Builders<BsonDocument>.Update
+                .Set("version_name", request.VersionName)
+                .Set("risk_assessment", riskAssessment);
+
+            var result = collection.UpdateOne(filter, update);
+            if (result.ModifiedCount > 0)
+            {
+                return Ok("Risk assessment updated successfully");
+            }
+            else
+            {
+                return NotFound("Document not found or no changes made");
+            }
+        }
+
+        /// <summary>
         /// Gets a document from a MongoDB collection.
         /// </summary>
         /// <param name="fileName">The name of the file.</param>
