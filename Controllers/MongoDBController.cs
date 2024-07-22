@@ -268,10 +268,12 @@ namespace strive_api.Controllers
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(request.Namespace);
             var filter = Builders<BsonDocument>.Filter.Eq("file_name", request.File_Name);
             var documents = collection.Find(filter).ToList();
+            BsonDocument latestVersion = new();
             var version = 0;
             if (documents.Count > 0)
             {
                 var highestVersion = documents.Max(doc => doc.GetValue("version_name").ToInt32());
+                latestVersion = documents.FirstOrDefault(doc => doc.GetValue("version_name").ToInt32() == highestVersion);
                 version = highestVersion + 1;
             }
             else
@@ -279,6 +281,7 @@ namespace strive_api.Controllers
                 response = CreateResponseModel(200, "Success", "Version history does not exist.", DateTime.Now);
                 return Ok(response);
             }
+            BsonDocument previousRiskAssessment = latestVersion.GetValue("risk_assessment").AsBsonDocument;
             BsonDocument riskAssessment = new()
             {
                 { "score", request.riskAssessmentScore },
@@ -315,6 +318,11 @@ namespace strive_api.Controllers
                     }
                 }
             };
+            if (previousRiskAssessment.ToJson().Equals(riskAssessment.ToJson()))
+            {
+                response = CreateResponseModel(200, "Success", "No new changes. Version not saved.", DateTime.Now);
+                return Ok(response);
+            }
             BsonDocument newVersion = new()
             {
                 { "file_name", request.File_Name },
