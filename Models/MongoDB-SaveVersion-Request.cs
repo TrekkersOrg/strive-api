@@ -1,9 +1,10 @@
 ﻿namespace strive_api.Models
 {
-    public class MongoDB_AddRiskAssessment_Request
+    public class MongoDB_SaveVersion_Request
     {
         public string? Namespace { get; set; }
         public string? File_Name { get; set; }
+        public string? Content {  get; set; }
         public int riskAssessmentScore { get; set; }
         public int financialScore { get; set; }
         public int financialSystemQueryScore { get; set; }
@@ -21,6 +22,5 @@
         public int operationalSystemQueryScore { get; set; }
         public int operationalKeywordsScore { get; set; }
         public int operationalXgbScore { get; set; }
-
     }
 }
