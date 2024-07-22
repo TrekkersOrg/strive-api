@@ -178,31 +178,10 @@ namespace strive_api.Controllers
         [EnableCors("AllowAll")]
         public IActionResult AddRiskAssessment(MongoDB_AddRiskAssessment_Request request)
         {
-            string? requestNamespace = request.Namespace;
-            string? fileName = request.File_Name;
-            string? requestVersionName = request.VersionName;
-            int riskAssessmentScore = request.riskAssessmentScore;
-            int financialScore = request.financialScore;
-            int financialSystemQueryScore = request.financialSystemQueryScore;
-            int financialKeywordsScore = request.financialKeywordsScore;
-            int financialXgbScore = request.financialXgbScore;
-            int reputationalScore = request.reputationalScore;
-            int reputationalSystemQueryScore = request.reputationalSystemQueryScore;
-            int reputationalKeywordsScore = request.reputationalKeywordsScore;
-            int reputationalXgbScore = request.reputationalXgbScore;
-            int regulatoryScore = request.regulatoryScore;
-            int regulatorySystemQueryScore = request.regulatorySystemQueryScore;
-            int regulatoryKeywordsScore = request.regulatoryKeywordsScore;
-            int regulatoryXgbScore = request.regulatoryXgbScore;
-            int operationalScore = request.operationalScore;
-            int operationalSystemQueryScore = request.operationalSystemQueryScore;
-            int operationalKeywordsScore = request.operationalKeywordsScore;
-            int operationalXgbScore = request.operationalXgbScore;
-
+            APIWrapper response;
             MongoClient client = new(_dbConnectionString);
             IMongoDatabase database = client.GetDatabase(_databaseName);
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(requestNamespace);
-
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(request.Namespace);
             BsonDocument riskAssessment = new BsonDocument
             {
                 { "score", request.riskAssessmentScore },
@@ -239,21 +218,20 @@ namespace strive_api.Controllers
                     }
                 }
             };
-
-            var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
-
+            var filter = Builders<BsonDocument>.Filter.Eq("file_name", request.File_Name);
             var update = Builders<BsonDocument>.Update
                 .Set("version_name", request.VersionName)
                 .Set("risk_assessment", riskAssessment);
-
             var result = collection.UpdateOne(filter, update);
             if (result.ModifiedCount > 0)
             {
-                return Ok("Risk assessment updated successfully");
+                response = CreateResponseModel(200, "Success", "Risk assessment added successfully.", DateTime.Now);
+                return Ok(response);
             }
             else
             {
-                return NotFound("Document not found or no changes made");
+                response = CreateResponseModel(200, "Success", "Document could not be found.", DateTime.Now);
+                return Ok(response);
             }
         }
 
