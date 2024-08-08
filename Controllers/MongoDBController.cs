@@ -342,7 +342,7 @@ namespace strive_api.Controllers
         /// <param name="collectionName">The name of the collection.</param>
         [HttpGet("GetDocument")]
         [EnableCors("AllowAll")]
-        public IActionResult GetDocument([FromQuery] string fileName, string collectionName)
+        public IActionResult GetDocument([FromQuery] string fileName, string collectionName, int version)
         {
             // Initialize response models.
             APIWrapper response = new();
@@ -355,7 +355,9 @@ namespace strive_api.Controllers
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
 
                 // Search for the document.
-                var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+                var fileNameFilter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+                var versionFilter = Builders<BsonDocument>.Filter.Eq("version_name", version);
+                var filter = Builders<BsonDocument>.Filter.And(fileNameFilter, versionFilter);
                 var document = collection.Find(filter).FirstOrDefault();
 
                 // Respective to the file existence, return appropriate response.
@@ -364,6 +366,23 @@ namespace strive_api.Controllers
                     responseData.FileExists = true;
                     responseData.FileName = fileName;
                     responseData.CollectionName = collectionName;
+                    responseData.riskAssessmentScore = document["risk_assessment"]["score"].AsInt32;
+                    responseData.financialScore = document["risk_assessment"]["financial"]["score"].AsInt32;
+                    responseData.financialSystemQueryScore = document["risk_assessment"]["financial"]["system_query"].AsInt32;
+                    responseData.financialKeywordsScore = document["risk_assessment"]["financial"]["keywords"].AsInt32;
+                    responseData.financialXgbScore = document["risk_assessment"]["financial"]["xgb"].AsInt32;
+                    responseData.regulatoryScore = document["risk_assessment"]["regulatory"]["score"].AsInt32;
+                    responseData.regulatorySystemQueryScore = document["risk_assessment"]["regulatory"]["system_query"].AsInt32;
+                    responseData.regulatoryKeywordsScore = document["risk_assessment"]["regulatory"]["keywords"].AsInt32;
+                    responseData.regulatoryXgbScore = document["risk_assessment"]["regulatory"]["xgb"].AsInt32;
+                    responseData.operationalScore = document["risk_assessment"]["operational"]["score"].AsInt32;
+                    responseData.operationalSystemQueryScore = document["risk_assessment"]["operational"]["system_query"].AsInt32;
+                    responseData.operationalKeywordsScore = document["risk_assessment"]["operational"]["keywords"].AsInt32;
+                    responseData.operationalXgbScore = document["risk_assessment"]["operational"]["xgb"].AsInt32;
+                    responseData.reputationalScore = document["risk_assessment"]["reputational"]["score"].AsInt32;
+                    responseData.reputationalSystemQueryScore = document["risk_assessment"]["reputational"]["system_query"].AsInt32;
+                    responseData.reputationalKeywordsScore = document["risk_assessment"]["reputational"]["keywords"].AsInt32;
+                    responseData.reputationalXgbScore = document["risk_assessment"]["reputational"]["xgb"].AsInt32;
                     response = CreateResponseModel(200, "Success", $"{fileName} exists in {collectionName} collection.", DateTime.Now, responseData);
                     return Ok(response);
                 }
