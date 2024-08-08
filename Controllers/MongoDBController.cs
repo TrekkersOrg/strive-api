@@ -385,6 +385,38 @@ namespace strive_api.Controllers
         }
 
         /// <summary>
+        /// Delete all versions of a document from a MongoDB collection.
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <param name="collectionName">The name of the collection.</param>
+        [HttpPost("DeleteAllVersions")]
+        [EnableCors("AllowAll")]
+        public IActionResult DeleteAllVersions([FromQuery] string fileName, string collectionName)
+        {
+            APIWrapper response = new();
+            MongoDB_DeleteAllVersions_Response responseData = new();
+            try
+            {
+                MongoClient client = new(_dbConnectionString);
+                IMongoDatabase database = client.GetDatabase(_databaseName);
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
+                var filter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+                var result = collection.DeleteMany(filter);
+                responseData.FileName = fileName;
+                responseData.Namespace = collectionName;
+                responseData.NumberOfDocuments = result.DeletedCount;
+                response = CreateResponseModel(200, "Success", "Delete all versions successfully.", DateTime.Now, responseData);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Return status code 500 for any unhandled errors.
+                response = CreateResponseModel((int)response.StatusCode, "Unexpected Error", ex.Message, DateTime.Now);
+                return StatusCode((int)response.StatusCode, response);
+            }
+        }
+
+        /// <summary>
         /// Extracts the text from a PDF into a string data type.
         /// </summary>
         /// <param name="filePath">The file path of the PDF.</param>
@@ -424,7 +456,8 @@ namespace strive_api.Controllers
                 typeof(MongoDB_PostCollection_Response),
                 typeof(MongoDB_UploadDocument_Response),
                 typeof(MongoDB_GetDocument_Response),
-                typeof(MongoDB_GetUser_Response)
+                typeof(MongoDB_GetUser_Response),
+                typeof(MongoDB_DeleteAllVersions_Response)
             };
             if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
