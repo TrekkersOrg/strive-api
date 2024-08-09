@@ -336,6 +336,44 @@ namespace strive_api.Controllers
         }
 
         /// <summary>
+        /// Get document content from a MongoDB collection.
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <param name="collectionName">The name of the collection.</param>
+        [HttpGet("GetDocumentContent")]
+        [EnableCors("AllowAll")]
+        public IActionResult GetDocumentContent([FromQuery] string fileName, string collectionName, int version)
+        {
+            APIWrapper response = new();
+            MongoDB_GetDocumentContent_Response responseData = new();
+            try
+            {
+                // Establish MongoDB connection to collection.
+                MongoClient client = new(_dbConnectionString);
+                IMongoDatabase database = client.GetDatabase(_databaseName);
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
+
+                // Search for the document.
+                var fileNameFilter = Builders<BsonDocument>.Filter.Eq("file_name", fileName);
+                var versionFilter = Builders<BsonDocument>.Filter.Eq("version_name", version);
+                var filter = Builders<BsonDocument>.Filter.And(fileNameFilter, versionFilter);
+                var document = collection.Find(filter).FirstOrDefault();
+                if (document != null)
+                {
+                    responseData.FileName = fileName;
+                    responseData.Content = document["content"].AsString;
+                    responseData.Version = version;
+                }
+                response = CreateResponseModel(200, "Success", "Document content fetched successfully.", DateTime.Now, responseData);
+                return Ok(response);
+            } catch (Exception ex)
+            {
+                // Return status code 500 for any unhandled errors.
+                response = CreateResponseModel((int)response.StatusCode, "Unexpected Error", ex.Message, DateTime.Now);
+                return StatusCode((int)response.StatusCode, response);
+            }
+        }
+        /// <summary>
         /// Gets a document from a MongoDB collection.
         /// </summary>
         /// <param name="fileName">The name of the file.</param>
@@ -476,7 +514,8 @@ namespace strive_api.Controllers
                 typeof(MongoDB_UploadDocument_Response),
                 typeof(MongoDB_GetDocument_Response),
                 typeof(MongoDB_GetUser_Response),
-                typeof(MongoDB_DeleteAllVersions_Response)
+                typeof(MongoDB_DeleteAllVersions_Response),
+                typeof(MongoDB_GetDocumentContent_Response)
             };
             if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
