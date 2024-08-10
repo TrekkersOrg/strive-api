@@ -9,6 +9,7 @@ using strive_api.Models;
 using Microsoft.AspNetCore.Cors;
 using System.Collections;
 using MongoDB.Bson.Serialization;
+using System;
 
 /// <summary>
 /// Manages Strive MongoDB service.
@@ -401,6 +402,31 @@ namespace strive_api.Controllers
                 // Respective to the file existence, return appropriate response.
                 if (document != null)
                 {
+                    if (!document.Contains("risk_assessment"))
+                    {
+                        responseData.FileExists = true;
+                        responseData.FileName = fileName;
+                        responseData.CollectionName = collectionName;
+                        responseData.riskAssessmentScore = null;
+                        responseData.financialScore = null;
+                        responseData.financialSystemQueryScore = null;
+                        responseData.financialKeywordsScore = null;
+                        responseData.financialXgbScore = null;
+                        responseData.regulatoryScore = null;
+                        responseData.regulatorySystemQueryScore = null;
+                        responseData.regulatoryKeywordsScore = null;
+                        responseData.regulatoryXgbScore = null;
+                        responseData.operationalScore = null;
+                        responseData.operationalSystemQueryScore = null;
+                        responseData.operationalKeywordsScore = null;
+                        responseData.operationalXgbScore = null;
+                        responseData.reputationalScore = null;
+                        responseData.reputationalSystemQueryScore = null;
+                        responseData.reputationalKeywordsScore = null;
+                        responseData.reputationalXgbScore = null;
+                        response = CreateResponseModel(200, "Success", $"{fileName} exists in {collectionName} collection.", DateTime.Now, responseData);
+                        return Ok(response);
+                    }
                     responseData.FileExists = true;
                     responseData.FileName = fileName;
                     responseData.CollectionName = collectionName;
