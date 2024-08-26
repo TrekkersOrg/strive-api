@@ -374,6 +374,7 @@ namespace strive_api.Controllers
                 return StatusCode((int)response.StatusCode, response);
             }
         }
+
         /// <summary>
         /// Gets a document from a MongoDB collection.
         /// </summary>
@@ -468,6 +469,73 @@ namespace strive_api.Controllers
         }
 
         /// <summary>
+        /// Gets all documents from a MongoDB collection.
+        /// </summary>
+        /// <param name="collectionName">The name of the collection.</param>
+        [HttpGet("GetAllDocuments")]
+        [EnableCors("AllowAll")]
+        public IActionResult GetAllDocuments([FromQuery] string collectionName)
+        {
+            // Initialize response models.
+            APIWrapper response = new();
+            List<MongoDB_GetDocument_Response> responseDataList = new();
+            try
+            {
+                // Establish MongoDB connection to collection.
+                MongoClient client = new(_dbConnectionString);
+                IMongoDatabase database = client.GetDatabase(_databaseName);
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(collectionName);
+
+                // Retrieve all documents.
+                var documents = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
+
+                // Iterate over each document and build response data.
+                foreach (var document in documents)
+                {
+                    if (document["version_name"].AsInt32 != 0)
+                    {
+                        continue;
+                    }
+                    MongoDB_GetDocument_Response responseData = new()
+                    {
+                        FileExists = true,
+                        FileName = document.Contains("file_name") ? document["file_name"].AsString : null,
+                        CollectionName = collectionName,
+                        riskAssessmentScore = document.Contains("risk_assessment") ? document["risk_assessment"]["score"].AsInt32 : (int?)null,
+                        financialScore = document.Contains("risk_assessment") ? document["risk_assessment"]["financial"]["score"].AsInt32 : (int?)null,
+                        financialSystemQueryScore = document.Contains("risk_assessment") ? document["risk_assessment"]["financial"]["system_query"].AsInt32 : (int?)null,
+                        financialKeywordsScore = document.Contains("risk_assessment") ? document["risk_assessment"]["financial"]["keywords"].AsInt32 : (int?)null,
+                        financialXgbScore = document.Contains("risk_assessment") ? document["risk_assessment"]["financial"]["xgb"].AsInt32 : (int?)null,
+                        regulatoryScore = document.Contains("risk_assessment") ? document["risk_assessment"]["regulatory"]["score"].AsInt32 : (int?)null,
+                        regulatorySystemQueryScore = document.Contains("risk_assessment") ? document["risk_assessment"]["regulatory"]["system_query"].AsInt32 : (int?)null,
+                        regulatoryKeywordsScore = document.Contains("risk_assessment") ? document["risk_assessment"]["regulatory"]["keywords"].AsInt32 : (int?)null,
+                        regulatoryXgbScore = document.Contains("risk_assessment") ? document["risk_assessment"]["regulatory"]["xgb"].AsInt32 : (int?)null,
+                        operationalScore = document.Contains("risk_assessment") ? document["risk_assessment"]["operational"]["score"].AsInt32 : (int?)null,
+                        operationalSystemQueryScore = document.Contains("risk_assessment") ? document["risk_assessment"]["operational"]["system_query"].AsInt32 : (int?)null,
+                        operationalKeywordsScore = document.Contains("risk_assessment") ? document["risk_assessment"]["operational"]["keywords"].AsInt32 : (int?)null,
+                        operationalXgbScore = document.Contains("risk_assessment") ? document["risk_assessment"]["operational"]["xgb"].AsInt32 : (int?)null,
+                        reputationalScore = document.Contains("risk_assessment") ? document["risk_assessment"]["reputational"]["score"].AsInt32 : (int?)null,
+                        reputationalSystemQueryScore = document.Contains("risk_assessment") ? document["risk_assessment"]["reputational"]["system_query"].AsInt32 : (int?)null,
+                        reputationalKeywordsScore = document.Contains("risk_assessment") ? document["risk_assessment"]["reputational"]["keywords"].AsInt32 : (int?)null,
+                        reputationalXgbScore = document.Contains("risk_assessment") ? document["risk_assessment"]["reputational"]["xgb"].AsInt32 : (int?)null
+                    };
+
+                    responseDataList.Add(responseData);
+                }
+
+                // Return the list of documents.
+                response = CreateResponseModel(200, "Success", $"Documents retrieved from {collectionName} collection.", DateTime.Now, responseDataList);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Return status code 500 for any unhandled errors.
+                response = CreateResponseModel(500, "Unexpected Error", ex.Message, DateTime.Now);
+                return StatusCode(500, response);
+            }
+        }
+
+        /// <summary>
         /// Delete all versions of a document from a MongoDB collection.
         /// </summary>
         /// <param name="fileName">The name of the file.</param>
@@ -541,7 +609,8 @@ namespace strive_api.Controllers
                 typeof(MongoDB_GetDocument_Response),
                 typeof(MongoDB_GetUser_Response),
                 typeof(MongoDB_DeleteAllVersions_Response),
-                typeof(MongoDB_GetDocumentContent_Response)
+                typeof(MongoDB_GetDocumentContent_Response),
+                typeof(List<MongoDB_GetDocument_Response>)
             };
             if (Array.Exists(validResponseTypes, t => t.IsInstanceOfType(data)))
             {
